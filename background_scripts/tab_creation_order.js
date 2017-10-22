@@ -3,11 +3,11 @@ var getTabOrderIndex = (function() {
   var tabCreationOrder = {},
       lastActiveTabId = null;
 
-  chrome.tabs.onActivated.addListener(function(activeInfo) {
+  browser.tabs.onActivated.addListener(function(activeInfo) {
     lastActiveTabId = activeInfo.tabId;
   });
 
-  chrome.tabs.onCreated.addListener(function(tab) {
+  browser.tabs.onCreated.addListener(function(tab) {
     tabCreationOrder[tab.id] = [];
     if (lastActiveTabId !== null) {
       if (tabCreationOrder[lastActiveTabId] === void 0)
@@ -16,7 +16,7 @@ var getTabOrderIndex = (function() {
     }
   });
 
-  chrome.tabs.onRemoved.addListener(function(tabId) {
+  browser.tabs.onRemoved.addListener(function(tabId) {
     if (tabCreationOrder[tabId] !== void 0) {
       Object.keys(tabCreationOrder).forEach(function(tab) {
         var index = tabCreationOrder[tab].indexOf(tabId);

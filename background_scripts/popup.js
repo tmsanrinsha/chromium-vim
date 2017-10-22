@@ -17,7 +17,7 @@ Popup.getBlacklisted = function(callback) {
 };
 
 Popup.getActiveTab = function(callback) {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
+  browser.tabs.query({active: true, currentWindow: true}, function(tab) {
     callback(tab[0]);
   });
 };
@@ -28,7 +28,7 @@ Popup.setIconDisabled = function() {
       path: 'icons/disabled.png',
       tabId: tab.id
     }, function() {
-      return chrome.runtime.lastError;
+      return browser.runtime.lastError;
     });
   });
 };
@@ -39,7 +39,7 @@ Popup.setIconEnabled = function(obj) {
       path: 'icons/38.png',
       tabId: obj.sender.tab.id
     }, function() {
-      return chrome.runtime.lastError;
+      return browser.runtime.lastError;
     });
   }
   this.getActiveTab(function(tab) {
@@ -47,7 +47,7 @@ Popup.setIconEnabled = function(obj) {
       path: 'icons/38.png',
       tabId: tab.id
     }, function() {
-      return chrome.runtime.lastError;
+      return browser.runtime.lastError;
     });
   });
 };
@@ -60,18 +60,18 @@ Popup.toggleEnabled = function(obj) {
   var request = obj.request;
   if (request && request.singleTab) {
     this.getActiveTab(function(tab) {
-      chrome.tabs.sendMessage(tab.id, {action: 'toggleEnabled'});
+      browser.tabs.sendMessage(tab.id, {action: 'toggleEnabled'});
     });
     if (request.blacklisted) {
       return this.setIconDisabled({});
     }
     return this.setIconEnabled({});
   }
-  chrome.tabs.query({}, function(tabs) {
+  browser.tabs.query({}, function(tabs) {
     this.active = !this.active;
     if (!request || (request && !request.blacklisted)) {
       tabs.map(function(tab) { return tab.id; }).forEach(function(id) {
-        chrome.tabs.sendMessage(id, {action: 'toggleEnabled'});
+        browser.tabs.sendMessage(id, {action: 'toggleEnabled'});
         if (this.active) {
           chrome.browserAction.setIcon({path: 'icons/38.png', tabId: id});
         } else {
@@ -103,7 +103,7 @@ Popup.toggleBlacklisted = function() {
   });
 };
 
-chrome.runtime.onConnect.addListener(function(port) {
+browser.runtime.onConnect.addListener(function(port) {
   if (port.name === 'popup') {
     port.onMessage.addListener(function(request) {
       if (Popup.hasOwnProperty(request.action)) {
@@ -119,7 +119,7 @@ chrome.runtime.onConnect.addListener(function(port) {
   }
 });
 
-chrome.runtime.onMessage.addListener(function(request, sender, callback) {
+browser.runtime.onMessage.addListener(function(request, sender, callback) {
   if (Popup.hasOwnProperty(request.action)) {
     if (!sender.tab)
       return;

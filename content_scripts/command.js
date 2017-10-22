@@ -570,7 +570,7 @@ Command.execute = function(value, repeats) {
     tab.tabbed = true;
     RUNTIME('openLink', {
       tab: tab,
-      url: chrome.extension.getURL('/pages/options.html'),
+      url: browser.extension.getURL('/pages/options.html'),
       repeats: repeats
     });
     return;
@@ -578,7 +578,7 @@ Command.execute = function(value, repeats) {
     tab.tabbed = true;
     RUNTIME('openLink', {
       tab: tab,
-      url: chrome.extension.getURL('/pages/changelog.html'),
+      url: browser.extension.getURL('/pages/changelog.html'),
       repeats: repeats
     });
     return;
@@ -586,7 +586,7 @@ Command.execute = function(value, repeats) {
     tab.tabbed = true;
     RUNTIME('openLink', {
       tab: tab,
-      url: chrome.extension.getURL('/pages/mappings.html')
+      url: browser.extension.getURL('/pages/mappings.html')
     });
     return;
   case 'stop':
@@ -1027,7 +1027,7 @@ Command.onDOMLoad = function() {
   this.onDOMLoadAll();
   if (window.self === window.top) {
     Command.frame = document.createElement('iframe');
-    Command.frame.src = chrome.runtime.getURL('cmdline_frame.html');
+    Command.frame.src = browser.runtime.getURL('cmdline_frame.html');
     Command.frame.id = 'cVim-command-frame';
     document.lastElementChild.appendChild(Command.frame);
   }
@@ -1109,7 +1109,7 @@ Command.onDOMLoadAll = function() {
   if (!settings.autofocus)
     this.preventAutoFocus();
   httpRequest({
-    url: chrome.runtime.getURL('content_scripts/main.css')
+    url: browser.runtime.getURL('content_scripts/main.css')
   }, function(data) {
     this.mainCSS = data;
   }.bind(this));

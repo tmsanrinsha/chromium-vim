@@ -18,9 +18,9 @@ window.httpRequest = function(request) {
 
 function updateTabIndices() {
   if (settings.showtabindices) {
-    chrome.tabs.query({currentWindow: true}, function(tabs) {
+    browser.tabs.query({currentWindow: true}, function(tabs) {
       tabs.forEach(function(tab) {
-        chrome.tabs.sendMessage(tab.id, {
+        browser.tabs.sendMessage(tab.id, {
           action: 'displayTabIndices',
           index: tab.index + 1
         });
@@ -38,18 +38,18 @@ chrome.storage.local.get('sessions', function(e) {
 });
 
 function getTab(tab, reverse, count, first, last) {
-  chrome.tabs.query({windowId: tab.windowId}, function(tabs) {
+  browser.tabs.query({windowId: tab.windowId}, function(tabs) {
     if (first) {
-      return chrome.tabs.update(tabs[0].id, {active: true});
+      return browser.tabs.update(tabs[0].id, {active: true});
     } else if (last) {
-      return chrome.tabs.update(tabs[tabs.length - 1].id, {active: true});
+      return browser.tabs.update(tabs[tabs.length - 1].id, {active: true});
     } else {
       var index = (reverse ? -1 : 1) * count + tab.index;
       if (count !== -1 && count !== 1)
         index = Math.min(Math.max(0, index), tabs.length - 1);
       else
         index = Utils.trueModulo(index, tabs.length);
-      return chrome.tabs.update(tabs[index].id, {active: true});
+      return browser.tabs.update(tabs[index].id, {active: true});
     }
   });
 }
@@ -113,7 +113,8 @@ var Listeners = {
     onRemoved: function(windowId) { delete ActiveTabs[windowId]; }
   },
 
-  extension: {
+  runtime: {
+    onMessage: Actions,
     onConnect: function(port) {
       if (activePorts.indexOf(port) !== -1)
         return;
@@ -137,8 +138,6 @@ var Listeners = {
     }
   },
 
-  runtime: { onMessage: Actions },
-
   commands: {
     onCommand: function(command) {
       switch (command) {
@@ -155,19 +154,19 @@ var Listeners = {
         break;
       case 'nextTab':
       case 'previousTab':
-        chrome.tabs.query({active: true, currentWindow: true}, function(e) {
+        browser.tabs.query({active: true, currentWindow: true}, function(e) {
           return getTab(e[0], false, (command === 'nextTab' ? 1 : -1),
                         false, false);
         });
         break;
       case 'viewSource':
-        chrome.tabs.query({active: true, currentWindow: true}, function(e) {
-          chrome.tabs.create({url: 'view-source:' + e[0].url, index: e[0].index + 1});
+        browser.tabs.query({active: true, currentWindow: true}, function(e) {
+          browser.tabs.create({url: 'view-source:' + e[0].url, index: e[0].index + 1});
         });
         break;
       case 'nextCompletionResult':
-        chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
-          chrome.tabs.sendMessage(tab[0].id, {
+        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
+          browser.tabs.sendMessage(tab[0].id, {
             action: 'nextCompletionResult'
           }, function() {
             chrome.windows.create({url: 'chrome://newtab'});
@@ -175,27 +174,27 @@ var Listeners = {
         });
         break;
       case 'deleteBackWord':
-        chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
-          chrome.tabs.sendMessage(tab[0].id, {action: 'deleteBackWord'});
+        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
+          browser.tabs.sendMessage(tab[0].id, {action: 'deleteBackWord'});
         });
         break;
       case 'closeTab':
-        chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
-          chrome.tabs.remove(tab[0].id, function() {
-            return chrome.runtime.lastError;
+        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
+          browser.tabs.remove(tab[0].id, function() {
+            return browser.runtime.lastError;
           });
         });
         break;
       case 'reloadTab':
-        chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
-          chrome.tabs.reload(tab[0].id);
+        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
+          browser.tabs.reload(tab[0].id);
         });
         break;
       case 'newTab':
-        chrome.tabs.create({url: chrome.runtime.getURL('pages/blank.html')});
+        browser.tabs.create({url: browser.runtime.getURL('pages/blank.html')});
         break;
       case 'restartcVim':
-        chrome.runtime.reload();
+        browser.runtime.reload();
         break;
       default:
         break;
@@ -211,4 +210,20 @@ var Listeners = {
       chrome[api][method].addListener(Listeners[api][method]);
     }
   }
+
+    // browser.tabs.onUpdated.addListener(Listeners.tabs.onUpdated);
+    // browser.tabs.onActivated.addListener(Listeners.tabs.onActivated);
+    // browser.tabs.onRemoved.addListener(Listeners.tabs.onRemoved);
+    // browser.tabs.onCreated.addListener(Listeners.tabs.onCreated);
+    // browser.tabs.onMoved.addListener(Listeners.tabs.onMoved);
+
+    // browser.windows.onRemoved.addListener(Listeners.windows.onRemoved);
+    // browser.runtime.onConnect.addListener(Listeners.runtime.onConnect);  // extension -> runtime
+    // browser.runtime.onMessage.addListener(Listeners.runtime.onMessage);
+    // browser.commands.onCommand.addListener(Listeners.commands.onCommand);
 })();
+
+
+
+
+
