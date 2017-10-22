@@ -1109,7 +1109,7 @@ Command.preventAutoFocus = function() {
 };
 
 Command.onDOMLoadAll = function() {
-  this.insertCSS();
+  this.insertCSS({file: 'content_scripts/main.css'});
   this.onBottom = settings.barposition === 'bottom';
   if (this.data !== void 0) {
     this.data.style[(!this.onBottom) ? 'bottom' : 'top'] = '';
@@ -1117,11 +1117,11 @@ Command.onDOMLoadAll = function() {
   }
   if (!settings.autofocus)
     this.preventAutoFocus();
-  httpRequest({
-    url: browser.runtime.getURL('content_scripts/main.css')
-  }, function(data) {
-    this.mainCSS = data;
-  }.bind(this));
+  // httpRequest({
+  //   url: browser.runtime.getURL('content_scripts/main.css')
+  // }, function(data) {
+  //   this.mainCSS = data;
+  // }.bind(this));
   this.setup();
   this.domElementsLoaded = true;
   this.callOnCvimLoad();
