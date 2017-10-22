@@ -780,7 +780,7 @@ Hints.create = function(type, multi) {
 
     if (Command.mainCSS === undefined) {
       httpRequest({
-        url: chrome.runtime.getURL('content_scripts/main.css')
+        url: browser.runtime.getURL('content_scripts/main.css')
       }, function(data) {
         Command.mainCSS = data;
         create();

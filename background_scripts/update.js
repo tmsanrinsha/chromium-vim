@@ -4,12 +4,12 @@ var Updates = {
   tabId: null
 };
 
-chrome.runtime.onInstalled.addListener(function(details) {
-  var currentVersion   = chrome.runtime.getManifest().version;
+browser.runtime.onInstalled.addListener(function(details) {
+  var currentVersion   = browser.runtime.getManifest().version;
   var previousVersion  = details.previousVersion;
   if (details.reason === 'install') {
-    chrome.tabs.create({
-      url: chrome.runtime.getURL('pages/mappings.html'),
+    browser.tabs.create({
+      url: browser.runtime.getURL('pages/mappings.html'),
       active: true
     }, function(tabInfo) {
       Updates.tabId = tabInfo.id;
@@ -19,26 +19,26 @@ chrome.runtime.onInstalled.addListener(function(details) {
     if (previousVersion !== currentVersion) {
       Options.refreshSettings(function() {
         if (settings.changelog) {
-          chrome.tabs.create({
-            url: chrome.runtime.getURL('pages/changelog.html'),
+          browser.tabs.create({
+            url: browser.runtime.getURL('pages/changelog.html'),
             active: true
           });
         }
       });
     }
-    var manifest = chrome.runtime.getManifest();
+    var manifest = browser.runtime.getManifest();
     var contentScripts = manifest.content_scripts[0];
-    var checkError = function() { if (chrome.runtime.lastError) return false; };
-    return chrome.tabs.query({status: 'complete'}, function(tabs) {
+    var checkError = function() { if (browser.runtime.lastError) return false; };
+    return browser.tabs.query({status: 'complete'}, function(tabs) {
       tabs.forEach(function(tab) {
         contentScripts.js.forEach(function(file) {
-          chrome.tabs.executeScript(tab.id, {
+          browser.tabs.executeScript(tab.id, {
             file: file,
             allFrames: contentScripts.all_fames
           }, checkError);
         });
         contentScripts.css.forEach(function(file) {
-          chrome.tabs.insertCSS(tab.id, {
+          browser.tabs.insertCSS(tab.id, {
             file: file,
             allFrames: contentScripts.all_fames
           }, checkError);

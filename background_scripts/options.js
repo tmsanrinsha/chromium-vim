@@ -99,7 +99,7 @@ Options.sendSettings = function() {
 
 Options.getSettings = function(request, sender) {
   this.refreshSettings(function() {
-    chrome.tabs.sendMessage(sender.tab.id, {
+    browser.tabs.sendMessage(sender.tab.id, {
       action: 'sendSettings',
       settings: request.reset ? defaultSettings : settings
     });
@@ -186,7 +186,7 @@ chrome.storage[storageMethod].get('settings', function(data) {
   }
 }.bind(Options));
 
-chrome.runtime.onMessage.addListener(function(request, sender, callback) {
+browser.runtime.onMessage.addListener(function(request, sender, callback) {
   if (Options.hasOwnProperty(request.action)) {
     Options[request.action](request, sender, callback);
   }

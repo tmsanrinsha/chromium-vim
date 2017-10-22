@@ -8,7 +8,7 @@ Actions = (function() {
     times = +times || 1;
     var doOpen = function() {
       for (var i = 0; i < times; ++i)
-        chrome.tabs.create(options);
+        browser.tabs.create(options);
     };
     if (options.active)
       setTimeout(doOpen, 80);
@@ -58,7 +58,7 @@ Actions = (function() {
         index: getTabOrderIndex(o.sender.tab)
       }, o.request.repeats);
     } else {
-      chrome.tabs.update({
+      browser.tabs.update({
         url: o.url,
         pinned: o.request.tab.pinned || o.sender.tab.pinned
       });
@@ -67,7 +67,7 @@ Actions = (function() {
 
   _.openLinkTab = function(o) {
     if (!o.sender.tab) {
-      chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
+      browser.tabs.query({active: true, currentWindow: true}, function(tab) {
         openTab({
           url: o.url,
           active: o.request.active,
@@ -118,9 +118,9 @@ Actions = (function() {
 
   _.syncSettings = function(o) {
     if (o.request.settings.hud === false && settings.hud === true) {
-      chrome.tabs.query({}, function(tabs) {
+      browser.tabs.query({}, function(tabs) {
         tabs.forEach(function(tab) {
-          chrome.tabs.sendMessage(tab.id, {action: 'hideHud'});
+          browser.tabs.sendMessage(tab.id, {action: 'hideHud'});
         });
       });
     }
@@ -142,7 +142,7 @@ Actions = (function() {
         incognito: o.request.incognito
       }, function(win) {
         for (var i = 1; i < urls.length; i++) {
-          chrome.tabs.create({
+          browser.tabs.create({
             url: urls[i],
             windowId: win.id
           });
@@ -162,7 +162,7 @@ Actions = (function() {
   };
 
   _.closeTab = function(o) {
-    chrome.tabs.query({currentWindow: true}, function(tabs) {
+    browser.tabs.query({currentWindow: true}, function(tabs) {
       var sortedIds = tabs.map(function(e) { return e.id; });
       var base = o.sender.tab.index;
       if (o.request.repeats > sortedIds.length - base) {
@@ -171,15 +171,15 @@ Actions = (function() {
       if (base < 0) {
         base = 0;
       }
-      chrome.tabs.remove(sortedIds.slice(base, base + o.request.repeats));
+      browser.tabs.remove(sortedIds.slice(base, base + o.request.repeats));
     });
   };
 
   (function() {
     var closeTab = function(o, n) {
-      chrome.tabs.query({currentWindow: true}, function(tabs) {
+      browser.tabs.query({currentWindow: true}, function(tabs) {
         tabs = tabs.map(function(e) { return e.id; });
-        chrome.tabs.remove(tabs.slice(o.sender.tab.index + (n < 0 ? n : 1),
+        browser.tabs.remove(tabs.slice(o.sender.tab.index + (n < 0 ? n : 1),
                            o.sender.tab.index + (n < 0 ? 0 : 1 + n)));
       });
     };
@@ -187,7 +187,7 @@ Actions = (function() {
     _.closeTabRight = function(o) { closeTab(o, o.request.repeats); };
     _.closeTabsToLeft = function(o) { closeTab(o, -o.sender.tab.index); };
     _.closeTabsToRight = function(o) {
-      chrome.tabs.query({currentWindow: true},
+      browser.tabs.query({currentWindow: true},
           function(tabs) { closeTab(o, tabs.length - o.sender.tab.index); });
     };
   })();
@@ -201,7 +201,7 @@ Actions = (function() {
         _ret[e.id] = [];
         return e.id;
       });
-      chrome.tabs.query({}, function(tabs) {
+      browser.tabs.query({}, function(tabs) {
         tabs = tabs.filter(function(e) {
           return info.indexOf(e.windowId) !== -1;
         });
@@ -227,7 +227,7 @@ Actions = (function() {
         return e.id;
       });
       var repin = function() {
-        chrome.tabs.update(o.sender.tab.id, {
+        browser.tabs.update(o.sender.tab.id, {
           pinned: o.sender.tab.pinned,
           active: true
         }, function(tab) {
@@ -237,12 +237,12 @@ Actions = (function() {
         });
       };
       if (info.indexOf(parseInt(o.request.windowId)) !== -1) {
-        chrome.tabs.move(o.sender.tab.id, {
+        browser.tabs.move(o.sender.tab.id, {
           windowId: parseInt(o.request.windowId),
           index: -1
         }, repin);
       } else {
-        chrome.tabs.query({currentWindow: true}, function(tabs) {
+        browser.tabs.query({currentWindow: true}, function(tabs) {
           if (tabs.length > 1) {
             chrome.windows.create({
               tabId: o.sender.tab.id,
@@ -287,16 +287,16 @@ Actions = (function() {
   };
 
   _.reloadTab = function(o) {
-    chrome.tabs.reload({
+    browser.tabs.reload({
       bypassCache: o.request.nocache
     });
   };
 
   _.reloadAllTabs = function(o) {
-    chrome.tabs.query({}, function(tabs) {
+    browser.tabs.query({}, function(tabs) {
       tabs.forEach(function(tab) {
         if (!/^chrome:\/\//.test(tab.url) && !(!o.request.current && tab.id === o.sender.tab.id && tab.windowId === o.sender.tab.windowId)) {
-          chrome.tabs.reload(tab.id);
+          browser.tabs.reload(tab.id);
         }
       });
     });
@@ -332,7 +332,7 @@ Actions = (function() {
   };
 
   _.pinTab = function(o) {
-    chrome.tabs.update(o.sender.tab.id, {
+    browser.tabs.update(o.sender.tab.id, {
       pinned: o.request.pinned !== void 0 ? o.request.pinned : !o.sender.tab.pinned
     });
   };
@@ -343,15 +343,15 @@ Actions = (function() {
 
   _.goToTab = function(o) {
     var id = o.request.id, index = o.request.index;
-    chrome.tabs.query({currentWindow: true}, function(tabs) {
+    browser.tabs.query({currentWindow: true}, function(tabs) {
       if (id) {
-        return chrome.tabs.get(id, function(tabInfo) {
+        return browser.tabs.get(id, function(tabInfo) {
           chrome.windows.update(tabInfo.windowId, {focused: true}, function() {
-            chrome.tabs.update(id, {active: true, highlighted: true});
+            browser.tabs.update(id, {active: true, highlighted: true});
           });
         });
       } else if (index !== void 0) {
-        chrome.tabs.update((index < tabs.length ? tabs[index].id :
+        browser.tabs.update((index < tabs.length ? tabs[index].id :
             tabs.slice(-1)[0].id), {active: true});
       }
     });
@@ -359,9 +359,9 @@ Actions = (function() {
 
   (function() {
     var move = function(o, by) {
-      chrome.tabs.query({currentWindow: true}, function(tabs) {
+      browser.tabs.query({currentWindow: true}, function(tabs) {
         var ptabs = tabs.filter(function(e) { return e.pinned; });
-        chrome.tabs.move(o.sender.tab.id, {
+        browser.tabs.move(o.sender.tab.id, {
           index: Math.min(o.sender.tab.pinned ? ptabs.length - 1 : ptabs.length + tabs.length - 1,
                           Math.max(o.sender.tab.pinned ? 0 : ptabs.length, o.sender.tab.index + by))
         });
@@ -401,7 +401,7 @@ Actions = (function() {
       return;
     }
     paste = paste.split('\n')[0];
-    chrome.tabs.update({
+    browser.tabs.update({
       url: Utils.toSearchURL(paste, o.request.engineUrl)
     });
   };
@@ -412,7 +412,7 @@ Actions = (function() {
 
   _.createSession = function(o) {
     sessions[o.request.name] = {};
-    chrome.tabs.query({
+    browser.tabs.query({
       currentWindow: true
     }, function(tabs) {
       tabs.forEach(function(tab) {
@@ -442,7 +442,7 @@ Actions = (function() {
 
   _.lastActiveTab = function(o) {
     if (ActiveTabs[o.sender.tab.windowId] !== void 0) {
-      chrome.tabs.update(ActiveTabs[o.sender.tab.windowId].shift(), {active: true});
+      browser.tabs.update(ActiveTabs[o.sender.tab.windowId].shift(), {active: true});
     }
   };
 
@@ -455,7 +455,7 @@ Actions = (function() {
         chrome.windows.create({
           url: 'chrome://newtab',
         }, function(tabInfo) {
-          chrome.tabs.update(tabInfo.tabs[0].id,
+          browser.tabs.update(tabInfo.tabs[0].id,
             {url: tabs[0].url, pinned: tabs[0].pinned}
           );
           tabs.slice(1).forEach(function(tab) {
@@ -468,7 +468,7 @@ Actions = (function() {
           });
         });
       } else {
-        chrome.tabs.query({currentWindow: true}, function(tabInfo) {
+        browser.tabs.query({currentWindow: true}, function(tabInfo) {
           var windowLength = tabInfo.length;
           tabs.forEach(function(tab) {
             openTab({
@@ -501,9 +501,9 @@ Actions = (function() {
   };
 
   _.cancelAllWebRequests = function() {
-    chrome.tabs.query({currentWindow: true}, function(tabs) {
+    browser.tabs.query({currentWindow: true}, function(tabs) {
       tabs.forEach(function(tab) {
-        chrome.tabs.sendMessage(tab.id, {action: 'cancelAllWebRequests'});
+        browser.tabs.sendMessage(tab.id, {action: 'cancelAllWebRequests'});
       });
     });
   };
@@ -515,10 +515,10 @@ Actions = (function() {
 
   _.updateMarks = function(o) {
     Quickmarks = o.request.marks;
-    chrome.tabs.query({currentWindow: true}, function(tabs) {
+    browser.tabs.query({currentWindow: true}, function(tabs) {
       for (var i = 0, l = tabs.length; i < l; ++i) {
         if (tabs[i].id !== o.sender.tab.id) {
-          chrome.tabs.sendMessage(tabs[i].id, {action: 'updateMarks', marks: o.request.marks});
+          browser.tabs.sendMessage(tabs[i].id, {action: 'updateMarks', marks: o.request.marks});
         }
       }
     });
@@ -537,18 +537,18 @@ Actions = (function() {
     }
   };
 
-  // chrome.tabs.zoom features: Chrome >= 38 (beta + dev)
+  // browser.tabs.zoom features: Chrome >= 38 (beta + dev)
   (function() {
 
     var zoom = function(o, scale, override, repeats) {
-      if (chrome.tabs.getZoom === void 0) {
+      if (browser.tabs.getZoom === void 0) {
         return o.callback(false);
       }
-      chrome.tabs.getZoom(o.sender.tab.id, function(zoomFactor) {
-        chrome.tabs.setZoomSettings(o.sender.tab.id, {
+      browser.tabs.getZoom(o.sender.tab.id, function(zoomFactor) {
+        browser.tabs.setZoomSettings(o.sender.tab.id, {
           scope: 'per-tab',
         }, function() {
-          chrome.tabs.setZoom(o.sender.tab.id, override || zoomFactor + scale * repeats);
+          browser.tabs.setZoom(o.sender.tab.id, override || zoomFactor + scale * repeats);
         });
       });
     };
@@ -567,16 +567,16 @@ Actions = (function() {
 
   _.duplicateTab = function(o) {
     for (var i = 0; i < o.request.repeats; i++) {
-      chrome.tabs.duplicate(o.sender.tab.id);
+      browser.tabs.duplicate(o.sender.tab.id);
     }
   };
 
   _.lastUsedTab = function() {
     if (LastUsedTabs.length === 2) {
-      chrome.tabs.query({}, function(tabs) {
+      browser.tabs.query({}, function(tabs) {
         for (var i = 0; i < tabs.length; i++) {
           if (LastUsedTabs[0] === tabs[i].id) {
-            chrome.tabs.update(LastUsedTabs[0], {active: true});
+            browser.tabs.update(LastUsedTabs[0], {active: true});
             break;
           }
         }
@@ -585,11 +585,11 @@ Actions = (function() {
   };
 
   _.runScript = function(o) {
-    chrome.tabs.executeScript(o.sender.tab.id, {
+    browser.tabs.executeScript(o.sender.tab.id, {
       code: o.request.code,
       runAt: 'document_start',
     }, function() {
-      if (!chrome.runtime.lastError) {
+      if (!browser.runtime.lastError) {
         return true;
       }
     });
@@ -601,9 +601,9 @@ Actions = (function() {
     if (!_.lastSearch) {
       return;
     }
-    chrome.tabs.query({}, function(tabs) {
+    browser.tabs.query({}, function(tabs) {
       tabs.forEach(function(tab) {
-        chrome.tabs.sendMessage(tab.id, {action: 'updateLastSearch', value: _.lastSearch});
+        browser.tabs.sendMessage(tab.id, {action: 'updateLastSearch', value: _.lastSearch});
       });
     });
   };
@@ -616,10 +616,10 @@ Actions = (function() {
   };
 
   _.injectCSS = function(o) {
-    chrome.tabs.insertCSS(o.sender.tab.id, {code: o.request.css}, function() {
+    browser.tabs.insertCSS(o.sender.tab.id, {code: o.request.css}, function() {
       // prevent the background script from throwing exceptions
       // when trying to insert CSS into unsupported URLs (chrome://*, etc)
-      if (!chrome.runtime.lastError) {
+      if (!browser.runtime.lastError) {
         return true;
       }
     });
@@ -648,7 +648,7 @@ Actions = (function() {
   };
 
   _.getBuffers = function(o) {
-    chrome.tabs.query({}, function(tabs) {
+    browser.tabs.query({}, function(tabs) {
       var otherWindows = [];
       tabs = tabs.filter(function(e) {
         if (e.windowId === o.sender.tab.windowId)
@@ -715,7 +715,7 @@ Actions = (function() {
       path: 'icons/38.png',
       tabId: o.sender.tab.id
     }, function() {
-      return chrome.runtime.lastError;
+      return browser.runtime.lastError;
     });
   };
 
@@ -777,7 +777,7 @@ Actions = (function() {
 
   _.showCommandFrame = function(o) {
     Frames.get(o.sender.tab.id).focusedId = o.request.frameId;
-    chrome.tabs.sendMessage(o.sender.tab.id, {
+    browser.tabs.sendMessage(o.sender.tab.id, {
       action: o.request.action,
       search: o.request.search,
       value: o.request.value,
@@ -793,7 +793,7 @@ Actions = (function() {
   };
 
   _.hideCommandFrame = function(o) {
-    chrome.tabs.sendMessage(o.sender.tab.id, {
+    browser.tabs.sendMessage(o.sender.tab.id, {
       action: o.request.action
     }, function() {
       var frame = Frames.get(o.sender.tab.id);
@@ -804,7 +804,7 @@ Actions = (function() {
   };
 
   _.callFind = function(o) {
-    chrome.tabs.sendMessage(o.sender.tab.id, {
+    browser.tabs.sendMessage(o.sender.tab.id, {
       action: o.request.action,
       command: o.request.command,
       params: o.request.params
@@ -812,14 +812,14 @@ Actions = (function() {
   };
 
   _.setFindIndex = function(o) {
-    chrome.tabs.sendMessage(o.sender.tab.id, {
+    browser.tabs.sendMessage(o.sender.tab.id, {
       action: o.request.action,
       index: o.request.index
     });
   };
 
   _.yankWindowUrls = function(o) {
-    chrome.tabs.query({ currentWindow: true }, function(tabs) {
+    browser.tabs.query({ currentWindow: true }, function(tabs) {
       Clipboard.copy(tabs.map(function(tab) {
         return tab.url;
       }).join('\n'));
@@ -828,15 +828,15 @@ Actions = (function() {
   };
 
   _.doIncSearch = function(o) {
-    chrome.tabs.sendMessage(o.sender.tab.id, o.request);
+    browser.tabs.sendMessage(o.sender.tab.id, o.request);
   };
 
   _.cancelIncSearch = function(o) {
-    chrome.tabs.sendMessage(o.sender.tab.id, o.request);
+    browser.tabs.sendMessage(o.sender.tab.id, o.request);
   };
 
   _.echoRequest = function(o) {
-    chrome.tabs.sendMessage(o.sender.tab.id, o.request);
+    browser.tabs.sendMessage(o.sender.tab.id, o.request);
   };
 
   _.loadLocalConfig = function(o) {
@@ -889,7 +889,7 @@ Actions = (function() {
   };
 
   _.muteTab = function(o) {
-    chrome.tabs.update(o.sender.tab.id, {muted: !o.sender.tab.mutedInfo.muted});
+    browser.tabs.update(o.sender.tab.id, {muted: !o.sender.tab.mutedInfo.muted});
   };
 
   return function(_request, _sender, _callback, _port) {
