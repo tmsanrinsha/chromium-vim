@@ -51,7 +51,7 @@ var scrollingElement = (function() {
     if (!event.isTrusted)
       return true;
     clickFocus = true;
-    lastActiveElem = event.srcElement;
+    lastActiveElem = event.target;
   });
 
   return function scrollingElement(dir) {
