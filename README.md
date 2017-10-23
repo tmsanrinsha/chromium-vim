@@ -1,3 +1,60 @@
+# Unofficial, **pre-pre-alpha** port of chromium-vim to Firefox
+
+Many things do not work. This is an exploration of how easily one
+could port cvim to Firefox. It contains many extraordinarily ugly
+hacks (the goal was to get things working without necessarily
+understanding the reasoning behind the code, since I wasn't sure
+whether that would be a worthwhile investment). I'm releasing this
+into the wild in case it's useful as comparison / a first step for
+somebody. (I don't know whether I'll have time to continue working on
+this myself.)
+
+What works:
+
+* Most commands from the command-line (`:`) with tab completion.
+* Scrolling (h,j,k,l,gg,G...)
+* Tab management (gt,gT,x,X...)
+* Marks (;<*>,'<*>,'')
+* History navigation (H,L) with a caveat (see below)
+
+Remaining issues:
+
+* All keyboard bindings often stop being available after navigating
+  the history (irrespective of whether it's done via cvim, using
+  `Alt-←`,`Alt-→` or the back and forward history buttons). It seems
+  that dom.js is not (re)loaded when navigating in history(?).
+
+* Make clicking on "Settings" from the cVim button cause the settings
+  pane to be opened rather than googling the address of the settings
+  pane — probably easy.
+
+* Ditto for `:help`.
+
+* Some (non-fatal) errors/warning messages in the console.
+
+* Make hints (`f` etc.) work — cVim's implementation depends on
+  `createShadowRoot` which is not available in Firefox, so this is
+  likely to be hard. Stealing from vimium might be the best path
+  forward here.
+
+* Make the extension work immediately upon its loading, without having
+  to refresh each webpage separately (if possible).
+
+* Stability — occasionally the keybindings stop working for mysterious
+  reasons (in addition to the partially understood above history bug).
+
+* A few commands (e.g. `:buffer`) and keybinding don't work.
+
+* Remove hacks.
+
+* CSS issues.
+
+* Check whether loading custom cvimrc works.
+
+* Regain compatibility with chromium.
+
+* etc.
+
 # What is cVim?
 
 Vim for Google Chrome. I hate using the mouse, especially after learning Vim. With my desktop (Linux), I have a lot of key bindings that make doing things easier: I open Chrome with `Alt+w`, I close a window with `Alt+Shift+d`, I open a terminal with `Alt+t`. This is harder to do with Chrome because it has no section for customizing keyboard shortcuts, and it is still necessary to use the mouse to do things like click links. cVim aims to eliminate this problem as best as the Chrome extensions API will allow it to.
