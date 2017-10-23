@@ -399,7 +399,7 @@ Mappings.actions = {
       return;
     }
     var currentPosition = [document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop];
-    window.scrollTo.apply(null, Scroll.lastPosition);
+    window.scrollTo.apply(window, Scroll.lastPosition);
     Scroll.lastPosition = currentPosition;
   },
   previousScrollPosition: function() {
@@ -413,7 +413,7 @@ Mappings.actions = {
     if (Scroll.positions.hasOwnProperty(key)) {
       Scroll.lastPosition =
         [document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop];
-      window.scrollTo.apply(null, Scroll.positions[key]);
+      window.scrollTo.apply(window, Scroll.positions[key]);
     } else {
       Status.setMessage('Mark not set', 1, 'error');
     }
