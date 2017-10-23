@@ -36,12 +36,6 @@ var scrollingElement = (function() {
       if (elem.scrollTop + elem.clientHeight < elem.scrollHeight)
         st |= SCROLLABLE_Y_DOWN;
     }
-      // console.log('hi');
-      // console.log(elem.offsetWidth);
-      // console.log(elem.clientWidth);
-      // console.log(elem.scrollHeight);
-      // console.log(elem.clientHeight);
-      // console.log(elem.scrollTop);
     return 0; // the problem is that for firefox, offsetWidth is very slightly larger than clientWidth and scrollHeight is very slightly larger than clientHeight, but not enough that scrolling can occur (???)
 //    return st;
   }
@@ -68,9 +62,6 @@ var scrollingElement = (function() {
     } else {
       elem = lastActiveElem = document.activeElement;
     }
-    // console.log("\n\nstart");
-    // console.log("document.activeElement");
-    // console.log(document.activeElement);
     if (elem === null)
       return null;
     return (function climb(elem) {
@@ -78,18 +69,7 @@ var scrollingElement = (function() {
         return lastScrollElem || document.scrollingElement;
       if (elem === document.scrollingElement)
         return elem;
-      // console.log("\nsubstart");
-      // console.log("lastScrollElem");
-      // console.log(lastScrollElem);
-      // console.log("document.scrollingElement");
-      // console.log(document.scrollingElement);
-      // console.log("elem");
-      // console.log(elem);
       var st = getScrollType(elem);
-      // console.log("st");
-      // console.log(st);
-      // console.log("dir");
-      // console.log(dir);
       return st & dir ? elem : climb(elem.parentElement);
     })(elem);
   };

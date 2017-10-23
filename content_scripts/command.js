@@ -71,16 +71,12 @@ Command.setupFrameElements = function() {
     } catch (e) {
       document.body.appendChild(this.data);
     }
-    // console.log("this.bar");
-    // console.log(this.bar);
-    // console.log(this.bar.style);
     if (getComputedStyle(this.bar) == null) {
       this.barHeight = 20; // do something cleverer here (perhaps parseInt(this.bar.style.height, 10); but that does not work)
       // obviously, this should not be hardcoded, since the height of #cVim-command-bar is user-determined...
     } else {
       this.barHeight = parseInt(getComputedStyle(this.bar).height, 10);
     }
-    // console.log(this.barHeight);
     if (this.onBottom) {
       this.barPaddingTop = 0;
       this.barPaddingBottom = this.barHeight;
