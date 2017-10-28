@@ -25,7 +25,7 @@ Sessions.nativeStepBack = function() {
 Sessions.stepBack = function(sender) {
   if (Object.keys(tabHistory).length && tabHistory[sender.tab.windowId] !== void 0 && tabHistory[sender.tab.windowId].length > 0) {
     var lastTab = tabHistory[sender.tab.windowId].pop();
-    browser.tabs.create({
+    Utils.chrome.tabs.create({
       active: true,
       index: lastTab.index,
       pinned: lastTab.pinned,
@@ -43,14 +43,14 @@ Sessions.stepBack = function(sender) {
         Sessions.onChanged();
       });
     } else {
-      browser.tabs.onRemoved.addListener(function() {
+      Utils.chrome.tabs.onRemoved.addListener(function() {
         Sessions.onChanged();
       });
     }
     Sessions.onChanged();
   } else {
     Sessions.activeTabs = {};
-    browser.tabs.onRemoved.addListener(function(id) {
+    Utils.chrome.tabs.onRemoved.addListener(function(id) {
       for (var key in Sessions.activeTabs) {
         if (Sessions.activeTabs[key].hasOwnProperty(id)) {
           if (tabHistory[Sessions.activeTabs[key][id].windowId] === void 0) {
@@ -62,9 +62,9 @@ Sessions.stepBack = function(sender) {
         }
       }
     });
-    browser.tabs.onUpdated.addListener(function(tab) {
+    Utils.chrome.tabs.onUpdated.addListener(function(tab) {
       try {
-        browser.tabs.get(tab, function(updatedTab) {
+        Utils.chrome.tabs.get(tab, function(updatedTab) {
           if (Sessions.activeTabs[updatedTab.windowId] === void 0) {
             Sessions.activeTabs[updatedTab.windowId] = {};
           }

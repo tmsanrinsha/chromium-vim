@@ -4,12 +4,12 @@ var Updates = {
   tabId: null
 };
 
-browser.runtime.onInstalled.addListener(function(details) {
-  var currentVersion   = browser.runtime.getManifest().version;
+Utils.chrome.runtime.onInstalled.addListener(function(details) {
+  var currentVersion   = Utils.chrome.runtime.getManifest().version;
   var previousVersion  = details.previousVersion;
   if (details.reason === 'install') {
-    browser.tabs.create({
-      url: browser.runtime.getURL('pages/mappings.html'),
+    Utils.chrome.tabs.create({
+      url: Utils.chrome.runtime.getURL('pages/mappings.html'),
       active: true
     }, function(tabInfo) {
       Updates.tabId = tabInfo.id;
@@ -19,26 +19,26 @@ browser.runtime.onInstalled.addListener(function(details) {
     if (previousVersion !== currentVersion) {
       Options.refreshSettings(function() {
         if (settings.changelog) {
-          browser.tabs.create({
-            url: browser.runtime.getURL('pages/changelog.html'),
+          Utils.chrome.tabs.create({
+            url: Utils.chrome.runtime.getURL('pages/changelog.html'),
             active: true
           });
         }
       });
     }
-    var manifest = browser.runtime.getManifest();
+    var manifest = Utils.chrome.runtime.getManifest();
     var contentScripts = manifest.content_scripts[0];
-    var checkError = function() { if (browser.runtime.lastError) return false; };
-    return browser.tabs.query({status: 'complete'}, function(tabs) {
+    var checkError = function() { if (Utils.chrome.runtime.lastError) return false; };
+    return Utils.chrome.tabs.query({status: 'complete'}, function(tabs) {
       tabs.forEach(function(tab) {
         contentScripts.js.forEach(function(file) {
-          browser.tabs.executeScript(tab.id, {
+          Utils.chrome.tabs.executeScript(tab.id, {
             file: file,
             allFrames: contentScripts.all_fames
           }, checkError);
         });
         contentScripts.css.forEach(function(file) {
-          browser.tabs.insertCSS(tab.id, {
+          Utils.chrome.tabs.insertCSS(tab.id, {
             file: file,
             allFrames: contentScripts.all_fames
           }, checkError);

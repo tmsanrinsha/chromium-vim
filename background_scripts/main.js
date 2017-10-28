@@ -18,9 +18,9 @@ window.httpRequest = function(request) {
 
 function updateTabIndices() {
   if (settings.showtabindices) {
-    browser.tabs.query({currentWindow: true}, function(tabs) {
+    Utils.chrome.tabs.query({currentWindow: true}, function(tabs) {
       tabs.forEach(function(tab) {
-        browser.tabs.sendMessage(tab.id, {
+        Utils.chrome.tabs.sendMessage(tab.id, {
           action: 'displayTabIndices',
           index: tab.index + 1
         });
@@ -38,18 +38,18 @@ chrome.storage.local.get('sessions', function(e) {
 });
 
 function getTab(tab, reverse, count, first, last) {
-  browser.tabs.query({windowId: tab.windowId}, function(tabs) {
+  Utils.chrome.tabs.query({windowId: tab.windowId}, function(tabs) {
     if (first) {
-      return browser.tabs.update(tabs[0].id, {active: true});
+      return Utils.chrome.tabs.update(tabs[0].id, {active: true});
     } else if (last) {
-      return browser.tabs.update(tabs[tabs.length - 1].id, {active: true});
+      return Utils.chrome.tabs.update(tabs[tabs.length - 1].id, {active: true});
     } else {
       var index = (reverse ? -1 : 1) * count + tab.index;
       if (count !== -1 && count !== 1)
         index = Math.min(Math.max(0, index), tabs.length - 1);
       else
         index = Utils.trueModulo(index, tabs.length);
-      return browser.tabs.update(tabs[index].id, {active: true});
+      return Utils.chrome.tabs.update(tabs[index].id, {active: true});
     }
   });
 }
@@ -113,31 +113,6 @@ var Listeners = {
     onRemoved: function(windowId) { delete ActiveTabs[windowId]; }
   },
 
-  runtime: {
-    onMessage: Actions,
-    onConnect: function(port) {
-      if (activePorts.indexOf(port) !== -1)
-        return;
-      var frameId = port.sender.frameId;
-      port.postMessage({type: 'hello'});
-      port.postMessage({type: 'addFrame', frameId: frameId});
-      activePorts.push(port);
-      port.onMessage.addListener(function(request) {
-        return Actions(request, port.sender, port.postMessage.bind(port), port);
-      });
-      port.onDisconnect.addListener(function() {
-        Frames.removeFrame(frameId);
-
-        for (var i = 0; i < activePorts.length; i++) {
-          if (activePorts[i] === port) {
-            activePorts.splice(i, 1);
-            break;
-          }
-        }
-      });
-    }
-  },
-
   commands: {
     onCommand: function(command) {
       switch (command) {
@@ -154,19 +129,19 @@ var Listeners = {
         break;
       case 'nextTab':
       case 'previousTab':
-        browser.tabs.query({active: true, currentWindow: true}, function(e) {
+        Utils.chrome.tabs.query({active: true, currentWindow: true}, function(e) {
           return getTab(e[0], false, (command === 'nextTab' ? 1 : -1),
                         false, false);
         });
         break;
       case 'viewSource':
-        browser.tabs.query({active: true, currentWindow: true}, function(e) {
-          browser.tabs.create({url: 'view-source:' + e[0].url, index: e[0].index + 1});
+        Utils.chrome.tabs.query({active: true, currentWindow: true}, function(e) {
+          Utils.chrome.tabs.create({url: 'view-source:' + e[0].url, index: e[0].index + 1});
         });
         break;
       case 'nextCompletionResult':
-        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
-          browser.tabs.sendMessage(tab[0].id, {
+        Utils.chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
+          Utils.chrome.tabs.sendMessage(tab[0].id, {
             action: 'nextCompletionResult'
           }, function() {
             chrome.windows.create({url: 'chrome://newtab'});
@@ -174,27 +149,27 @@ var Listeners = {
         });
         break;
       case 'deleteBackWord':
-        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
-          browser.tabs.sendMessage(tab[0].id, {action: 'deleteBackWord'});
+        Utils.chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
+          Utils.chrome.tabs.sendMessage(tab[0].id, {action: 'deleteBackWord'});
         });
         break;
       case 'closeTab':
-        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
-          browser.tabs.remove(tab[0].id, function() {
-            return browser.runtime.lastError;
+        Utils.chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
+          Utils.chrome.tabs.remove(tab[0].id, function() {
+            return Utils.chrome.runtime.lastError;
           });
         });
         break;
       case 'reloadTab':
-        browser.tabs.query({active: true, currentWindow: true}, function(tab) {
-          browser.tabs.reload(tab[0].id);
+        Utils.chrome.tabs.query({active: true, currentWindow: true}, function(tab) {
+          Utils.chrome.tabs.reload(tab[0].id);
         });
         break;
       case 'newTab':
-        browser.tabs.create({url: browser.runtime.getURL('pages/blank.html')});
+        Utils.chrome.tabs.create({url: Utils.chrome.runtime.getURL('pages/blank.html')});
         break;
       case 'restartcVim':
-        browser.runtime.reload();
+        Utils.chrome.runtime.reload();
         break;
       default:
         break;
@@ -203,6 +178,38 @@ var Listeners = {
   }
 
 };
+
+var extension = {
+  onConnect: function(port) {
+    if (activePorts.indexOf(port) !== -1)
+      return;
+    var frameId = port.sender.frameId;
+    port.postMessage({type: 'hello'});
+    port.postMessage({type: 'addFrame', frameId: frameId});
+    activePorts.push(port);
+    port.onMessage.addListener(function(request) {
+      return Actions(request, port.sender, port.postMessage.bind(port), port);
+    });
+    port.onDisconnect.addListener(function() {
+      Frames.removeFrame(frameId);
+
+      for (var i = 0; i < activePorts.length; i++) {
+        if (activePorts[i] === port) {
+          activePorts.splice(i, 1);
+          break;
+        }
+      }
+    });
+  }
+};
+
+if (Utils.isFirefox) {
+  Listeners.runtime = extension;
+  Listeners.runtime.onMessage = Actions;
+} else {
+  Listeners.extension = extension;
+  Listeners.runtime = { onMessage: Actions };
+}
 
 (function() {
   for (var api in Listeners) {

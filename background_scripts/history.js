@@ -20,9 +20,9 @@ var History = {
   },
 
   sendToTabs: function() {
-    browser.tabs.query({}, function(tabs) {
+    Utils.chrome.tabs.query({}, function(tabs) {
       tabs.forEach(function(tab) {
-        browser.tabs.sendMessage(tab.id, {
+        Utils.chrome.tabs.sendMessage(tab.id, {
           action: 'commandHistory',
           history: History.commandHistory
         });

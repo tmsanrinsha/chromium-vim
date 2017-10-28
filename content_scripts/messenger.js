@@ -1,8 +1,8 @@
-var port = browser.runtime.connect({name: 'main'});
+var port = Utils.chrome.extension.connect({name: 'main'});
 port.onDisconnect.addListener(function() {
   window.portDestroyed = true;
-  browser.runtime.sendMessage = function() {};
-  browser.runtime.connect = function() {};
+  Utils.chrome.runtime.sendMessage = function() {};
+  Utils.chrome.runtime.connect = function() {};
   Command.hide();
   removeListeners();
   Visual.exit();
@@ -22,7 +22,7 @@ port.onDisconnect.addListener(function() {
           callback : void 0);
     };
   };
-  RUNTIME = $(browser.runtime.sendMessage, browser.runtime);
+  RUNTIME = $(Utils.chrome.runtime.sendMessage, Utils.chrome.runtime);
   PORT = $(port.postMessage, port);
   ECHO = function(action, args, callback) {
     args.action = 'echoRequest';
@@ -164,7 +164,7 @@ port.onMessage.addListener(function(response) {
   }
 });
 
-browser.runtime.onMessage.addListener(function(request, sender, callback) {
+Utils.chrome.extension.onMessage.addListener(function(request, sender, callback) {
   switch (request.action) {
   case 'hideHud':
     HUD.hide(true);
