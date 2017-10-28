@@ -575,7 +575,7 @@ Command.execute = function(value, repeats) {
     tab.tabbed = true;
     RUNTIME('openLink', {
       tab: tab,
-      url: browser.extension.getURL('/pages/options.html'),
+      url: Utils.chrome.extension.getURL('/pages/options.html'),
       repeats: repeats
     });
     return;
@@ -583,7 +583,7 @@ Command.execute = function(value, repeats) {
     tab.tabbed = true;
     RUNTIME('openLink', {
       tab: tab,
-      url: browser.extension.getURL('/pages/changelog.html'),
+      url: Utils.chrome.extension.getURL('/pages/changelog.html'),
       repeats: repeats
     });
     return;
@@ -591,7 +591,7 @@ Command.execute = function(value, repeats) {
     tab.tabbed = true;
     RUNTIME('openLink', {
       tab: tab,
-      url: browser.extension.getURL('/pages/mappings.html')
+      url: Utils.chrome.extension.getURL('/pages/mappings.html')
     });
     return;
   case 'stop':
@@ -1032,7 +1032,7 @@ Command.onDOMLoad = function() {
   this.onDOMLoadAll();
   if (window.self === window.top) {
     Command.frame = document.createElement('iframe');
-    Command.frame.src = browser.runtime.getURL('cmdline_frame.html');
+    Command.frame.src = Utils.chrome.runtime.getURL('cmdline_frame.html');
     Command.frame.id = 'cVim-command-frame';
     document.lastElementChild.appendChild(Command.frame);
   }
@@ -1105,7 +1105,11 @@ Command.preventAutoFocus = function() {
 };
 
 Command.onDOMLoadAll = function() {
-  this.insertCSS({file: 'content_scripts/main.css'});
+  if (Utils.isFirefox) {
+    this.insertCSS({file: 'content_scripts/main.css'});
+  } else {
+    this.insertCSS();
+  }
   this.onBottom = settings.barposition === 'bottom';
   if (this.data !== void 0) {
     this.data.style[(!this.onBottom) ? 'bottom' : 'top'] = '';
@@ -1113,11 +1117,15 @@ Command.onDOMLoadAll = function() {
   }
   if (!settings.autofocus)
     this.preventAutoFocus();
-  // httpRequest({
-  //   url: browser.runtime.getURL('content_scripts/main.css')
-  // }, function(data) {
-  //   this.mainCSS = data;
-  // }.bind(this));
+
+  if (!Utils.isFirefox) {
+    httpRequest({
+      url: Utils.chrome.runtime.getURL('content_scripts/main.css')
+    }, function(data) {
+      this.mainCSS = data;
+    }.bind(this));
+  }
+
   this.setup();
   this.domElementsLoaded = true;
   this.callOnCvimLoad();

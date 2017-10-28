@@ -46,7 +46,7 @@ Settings.saveSettings = function() {
       alert('cVim Error: unset the localconfig before saving from here');
     }
     this.saveButton.value = 'Saved';
-    browser.runtime.sendMessage({
+    Utils.chrome.runtime.sendMessage({
       action: 'saveSettings',
       settings: this.settings,
       sendSettings: true
@@ -83,7 +83,7 @@ Settings.syncGist = function() {
 
 function addVersionInfo() {
   var el = document.getElementById('version-number');
-  var version = browser.runtime.getManifest().version;
+  var version = Utils.chrome.runtime.getManifest().version;
   if (version) {
     el.textContent = '(' + version + ')';
   }

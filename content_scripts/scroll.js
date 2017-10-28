@@ -36,8 +36,7 @@ var scrollingElement = (function() {
       if (elem.scrollTop + elem.clientHeight < elem.scrollHeight)
         st |= SCROLLABLE_Y_DOWN;
     }
-    return 0; // the problem is that for firefox, offsetWidth is very slightly larger than clientWidth and scrollHeight is very slightly larger than clientHeight, but not enough that scrolling can occur (???)
-//    return st;
+    return Utils.isFirefox ? 0 : st; // the problem is that for firefox, offsetWidth is very slightly larger than clientWidth and scrollHeight is very slightly larger than clientHeight, but not enough that scrolling can occur (???)
   }
 
   var lastActiveElem = null,

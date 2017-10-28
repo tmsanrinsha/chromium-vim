@@ -85,6 +85,15 @@ var Utils = {
         (url.length === 1 && url[0] === 'localhost') || hasPath;
     };
   })(),
+  isFirefox: (typeof browser !== 'undefined'),
+  chrome: (function() {
+    if (typeof browser === 'undefined') {
+      return chrome;
+    }
+    browser.extension.connect = browser.runtime.connect;
+    browser.extension.onMessage = browser.runtime.onMessage;
+    return browser;
+  })(),
 };
 
 Object.clone = function(node) {
