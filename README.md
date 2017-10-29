@@ -24,12 +24,6 @@ Remaining issues:
   `Alt-←`,`Alt-→` or the back and forward history buttons). It seems
   that dom.js is not (re)loaded when navigating in history(?).
 
-* Make clicking on "Settings" from the cVim button cause the settings
-  pane to be opened rather than googling the address of the settings
-  pane — probably easy.
-
-* Ditto for `:help`.
-
 * Some (non-fatal) errors/warning messages in the console.
 
 * Make hints (`f` etc.) work — cVim's implementation depends on
